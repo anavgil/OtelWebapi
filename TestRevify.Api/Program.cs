@@ -3,10 +3,11 @@ using Serilog;
 using Serilog.Enrichers.Span;
 using System.Text.Json.Serialization;
 using TestRevify.Api.Endpoints;
+using TestRevify.Api.Middlewares;
 using TestRevify.Api.OTL;
 using TestRevify.Api.Workers;
 
-var serviceName = "WebApi";
+var serviceName = "Revify-WebApi";
 var builder = WebApplication.CreateSlimBuilder(args);
 //const string outputTemplate =
 //    "[{Level:w}]: {Timestamp:dd-MM-yyyy:HH:mm:ss} {MachineName} {EnvironmentName} {SourceContext} {Message}{NewLine}{Exception}";
@@ -17,21 +18,29 @@ builder.Host.UseSerilog((context, services, configuration) =>
     configuration
     .Enrich.FromLogContext()
     .Enrich.WithSpan()
+    .Enrich.WithMachineName()
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithThreadName()
     .ReadFrom.Services(services)
     .WriteTo.Console()
     .WriteTo.OpenTelemetry(options =>
     {
+        options.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
 #if DEBUG
         options.Endpoint = "http://localhost:4317";
-#else                            
-        options.Endpoint = "http://otel-collector:4317";
-#endif
-        options.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
         options.ResourceAttributes = new Dictionary<string, object>
         {
             ["service.name"] = serviceName,
-            ["deployment.environment"] = "production"
+            ["deployment.environment"] = "Develop"
         };
+#else
+        options.Endpoint = "http://otel-collector:4317";
+        options.ResourceAttributes = new Dictionary<string, object>
+        {
+            ["service.name"] = serviceName,
+            ["deployment.environment"] = "Production"
+        };
+#endif
     })
     );
 
@@ -53,6 +62,16 @@ builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
 });
 
 var app = builder.Build();
+
+// Habilitar WebSockets
+var webSocketOptions = new WebSocketOptions()
+{
+    KeepAliveInterval = TimeSpan.FromMinutes(2), // Mantiene viva la conexión
+};
+app.UseWebSockets(webSocketOptions);
+// Middleware personalizado para manejar las conexiones WebSocket
+app.UseMiddleware<WebSocketMiddleware>();
+
 
 app.UseSerilogRequestLogging();
 
