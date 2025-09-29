@@ -1,0 +1,78 @@
+# For HTTPS
+@HostAddress = https://localhost:7022
+
+# For HTTP
+# @HostAddress = http://localhost:5288
+
+### Get metadata
+GET {{HostAddress}}/odata/$metadata
+
+### Swagger
+GET {{HostAddress}}/swagger/v1/swagger.json
+
+### OpenAPI
+GET {{HostAddress}}/openapi/v1.json
+
+### Get list of customers
+GET {{HostAddress}}/odata/Customers
+Accept: application/json
+
+### Get Customer Types
+GET {{HostAddress}}/odata/Customers?$select=Type
+
+### Query customer by ID
+GET {{HostAddress}}/odata/Customers(1)
+Accept: application/json
+
+### Get Premium Customers
+GET {{HostAddress}}/odata/customers?$filter=Type%20eq%20%27Premium%27
+Accept: application/json
+
+### Get customer by name
+GET {{HostAddress}}/odata/Customers/GetCustomerByName(name='Customer1')
+Accept: application/json
+
+### Get customers with their orders
+GET {{HostAddress}}/odata/Customers?$Expand=Orders
+Accept: application/json
+
+### Calculate Customers total amount
+GET {{HostAddress}}/odata/Customers(1)/GetCustomerOrdersTotalAmount
+Accept: application/json
+
+### Query customers' amounts
+GET {{HostAddress}}/odata/Customers?$Expand=Orders($Select=Amount)
+Accept: application/json
+
+### Query customers' orders
+GET {{HostAddress}}/odata/Customers?$Expand=Orders&$Select=Orders
+Accept: application/json
+
+### Order customers by name
+GET {{HostAddress}}/odata/Customers?$OrderBy=Name%20desc
+Accept: application/json
+
+### Add a new customer
+POST {{HostAddress}}/odata/Customers
+Content-Type: application/json
+
+{
+    "Name": "John Doe",
+    "Type": "VIP"
+}
+
+### Get customers count: @odata.count
+GET {{HostAddress}}/odata/Customers?$count=true
+Accept: application/json
+
+### Update customer name
+PATCH {{HostAddress}}/odata/Customers(3)
+Content-Type: application/json
+
+{
+    "Name": "John Doe 23",
+    "Type": "Premium, VIP"
+}
+
+
+### Add more endpoints here

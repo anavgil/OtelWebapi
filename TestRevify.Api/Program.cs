@@ -53,13 +53,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
-builder.Services.AddHostedService<QueuedHostedService>();
-builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
-{
-    if (!int.TryParse(builder.Configuration["QueueCapacity"], out var queueCapacity))
-        queueCapacity = 100;
-    return new BackgroundTaskQueue(queueCapacity);
-});
+//builder.Services.AddHostedService<QueuedHostedService>();
+//builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
+//{
+//    if (!int.TryParse(builder.Configuration["QueueCapacity"], out var queueCapacity))
+//        queueCapacity = 100;
+//    return new BackgroundTaskQueue(queueCapacity);
+//});
 
 var app = builder.Build();
 
