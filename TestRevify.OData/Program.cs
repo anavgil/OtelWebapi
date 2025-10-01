@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
 using TestRevify.OData;
 
 // Learn more about configuring OData at https://learn.microsoft.com/odata/webapi-8/getting-started
@@ -22,10 +23,7 @@ builder.Services.AddControllers().AddOData(opt =>
 
 // Learn more about configuring Swagger/OpenAPI at https://github.com/OData/AspNetCoreOData/tree/main/sample/ODataRoutingSample
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "TestRevify.OData", Version = "v1" });
-});
+
 
 // OpenAPI
 builder.Services.AddOpenApi();
@@ -38,8 +36,14 @@ app.UseHttpsRedirection();
 if (app.Environment.IsDevelopment())
 {
     app.UseODataRouteDebug();
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestRevify.OData V1"));
+
+    app.MapScalarApiReference(options =>
+    {
+        options
+        .WithTitle("Revify OData API")
+        .WithTheme(ScalarTheme.Kepler)
+        .WithLayout(ScalarLayout.Modern);
+    });
 
     // OpenAPI
     app.MapOpenApi();

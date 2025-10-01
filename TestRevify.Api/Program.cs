@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -48,20 +49,25 @@ builder.Services.RegisterOtl(serviceName);
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddProblemDetails();
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
-//builder.Services.AddHostedService<QueuedHostedService>();
-//builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
-//{
-//    if (!int.TryParse(builder.Configuration["QueueCapacity"], out var queueCapacity))
-//        queueCapacity = 100;
-//    return new BackgroundTaskQueue(queueCapacity);
-//});
+builder.Services.AddHostedService<QueuedHostedService>();
+builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
+{
+    if (!int.TryParse(builder.Configuration["QueueCapacity"], out var queueCapacity))
+        queueCapacity = 100;
+    return new BackgroundTaskQueue(queueCapacity);
+});
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 // Habilitar WebSockets
 var webSocketOptions = new WebSocketOptions()
@@ -95,3 +101,4 @@ internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 
 }
+
